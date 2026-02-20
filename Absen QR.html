@@ -1,0 +1,2636 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduManager - Sistem Manajemen Sekolah dengan Kehadiran QR Code</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 50%, #1b263b 100%);
+    }
+    
+    .card-glass {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .sidebar-item {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .sidebar-item:hover {
+      transform: translateX(4px);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .input-field {
+      transition: all 0.3s ease;
+    }
+    
+    .input-field:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .slide-in {
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    .pulse-dot {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .table-row {
+      transition: all 0.2s ease;
+    }
+    
+    .table-row:hover {
+      background: rgba(59, 130, 246, 0.05);
+    }
+    
+    .modal-overlay {
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    .toast {
+      animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 2.7s forwards;
+    }
+    
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-20px); }
+    }
+    
+    .attendance-box {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 2px solid #0284c7;
+    }
+    
+    .attendance-success {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 2px solid #22c55e;
+    }
+    
+    .attendance-error {
+      background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+      border: 2px solid #ef4444;
+    }
+    
+    .barcode-card {
+      background: white;
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    
+    .barcode-input {
+      font-size: 16px;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+    
+    .attendance-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .attendance-badge.hadir {
+      background: #dcfce7;
+      color: #166534;
+    }
+    
+    .attendance-badge.sakit {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .attendance-badge.izin {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+    
+    .attendance-badge.alpha {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .real-time-indicator {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .camera-active {
+      animation: blink 0.6s infinite;
+    }
+
+    #qrcodePreviewContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    #qrcodePreviewContainer canvas,
+    #qrcodePreviewContainer img {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full"></div>
+  <script>
+    const defaultConfig = {
+      school_name: 'SD Negeri 01 Pendidikan',
+      school_address: 'Jl. Pendidikan No. 1, Jakarta',
+      principal_name: 'Dr. Ahmad Hidayat, M.Pd.',
+      academic_year: '2024/2025',
+      primary_color: '#1e3a5f',
+      secondary_color: '#3b82f6',
+      accent_color: '#10b981',
+      text_color: '#1e293b',
+      background_color: '#f8fafc'
+    };
+    
+    let config = { ...defaultConfig };
+    let currentUser = null;
+    let currentView = 'login';
+    let sidebarCollapsed = false;
+    let allData = [];
+    let isLoading = false;
+    let toastMessage = null;
+    let modalState = { isOpen: false, type: null, data: null };
+    let searchQuery = '';
+    let selectedClass = 'all';
+    let selectedDate = new Date().toISOString().split('T')[0];
+    let barcodeInput = '';
+    let isCameraActive = false;
+    let selectedSemester = '1';
+    
+    const dataHandler = {
+      onDataChanged(data) {
+        allData = data || [];
+        render();
+      }
+    };
+    
+    function generateId() {
+      return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    
+    function showToast(message, type = 'success') {
+      toastMessage = { message, type };
+      render();
+      setTimeout(() => {
+        toastMessage = null;
+        render();
+      }, 3000);
+    }
+    
+    function getDataByType(type) {
+      return allData.filter(item => item.type === type);
+    }
+    
+    function getUserByCredentials(username, password) {
+      const users = getDataByType('user');
+      return users.find(u => u.username === username && u.password === password);
+    }
+    
+    function calculateGrade(formatif, pts, pas) {
+      const nilaiAkhir = (formatif * 0.4) + (pts * 0.3) + (pas * 0.3);
+      let predikat = 'D';
+      if (nilaiAkhir >= 90) predikat = 'A';
+      else if (nilaiAkhir >= 80) predikat = 'B';
+      else if (nilaiAkhir >= 70) predikat = 'C';
+      return { nilaiAkhir: Math.round(nilaiAkhir * 100) / 100, predikat };
+    }
+    
+    function generateQRCode(nis, nama) {
+      return `STD${nis.toString().padStart(6, '0')}|${nama}`;
+    }
+    
+    function getTodayAttendance() {
+      const attendances = getDataByType('attendance');
+      return attendances.filter(a => a.attendanceDate === selectedDate);
+    }
+    
+    function getStudentAttendanceToday(studentId) {
+      const attendances = getTodayAttendance();
+      return attendances.find(a => a.studentId === studentId);
+    }
+    
+    function render() {
+      const app = document.getElementById('app');
+      
+      if (!currentUser) {
+        app.innerHTML = renderLoginPage();
+      } else {
+        app.innerHTML = renderDashboard();
+      }
+      
+      attachEventListeners();
+    }
+    
+    function renderLoginPage() {
+      return `
+        <div class="h-full w-full gradient-bg flex items-center justify-center p-4">
+          <div class="card-glass rounded-3xl shadow-2xl w-full max-w-md p-8 fade-in">
+            <div class="text-center mb-8">
+              <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+              </div>
+              <h1 class="text-2xl font-bold text-gray-800">EduManager</h1>
+              <p class="text-gray-500 mt-1">Sistem Manajemen Sekolah</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <input 
+                  type="text" 
+                  id="loginUsername" 
+                  class="input-field w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                  placeholder="Masukkan username"
+                  required
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input 
+                  type="password" 
+                  id="loginPassword" 
+                  class="input-field w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                  placeholder="Masukkan password"
+                  required
+                >
+              </div>
+              
+              <button 
+                type="submit" 
+                class="btn-primary w-full py-3 px-6 rounded-xl text-white font-semibold shadow-lg"
+                ${isLoading ? 'disabled' : ''}
+              >
+                ${isLoading ? '<span class="inline-block animate-spin mr-2">⟳</span> Memproses...' : 'Masuk'}
+              </button>
+            </form>
+            
+            <div class="mt-6 p-4 bg-blue-50 rounded-xl">
+              <p class="text-xs text-blue-600 font-medium mb-2">Demo Akun:</p>
+              <p class="text-xs text-gray-600">Admin: admin / admin123</p>
+              <p class="text-xs text-gray-600">Guru: guru / guru123</p>
+            </div>
+          </div>
+        </div>
+        ${renderToast()}
+      `;
+    }
+    
+    function renderDashboard() {
+      const menuItems = getMenuItems();
+      
+      return `
+        <div class="h-full w-full flex bg-gray-50">
+          <!-- Sidebar -->
+          <aside class="h-full ${sidebarCollapsed ? 'w-20' : 'w-64'} gradient-bg transition-all duration-300 flex flex-col shadow-xl">
+            <!-- Logo -->
+            <div class="p-4 border-b border-white/10">
+              <div class="flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'}">
+                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                </div>
+                ${!sidebarCollapsed ? '<span class="text-white font-bold text-lg">EduManager</span>' : ''}
+              </div>
+            </div>
+            
+            <!-- Menu -->
+            <nav class="flex-1 p-3 overflow-y-auto scrollbar-thin">
+              <div class="space-y-1">
+                ${menuItems.map(item => `
+                  <button 
+                    class="sidebar-item w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} px-3 py-3 rounded-xl ${currentView === item.view ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'} transition-colors"
+                    data-view="${item.view}"
+                  >
+                    ${item.icon}
+                    ${!sidebarCollapsed ? `<span class="font-medium text-sm">${item.label}</span>` : ''}
+                  </button>
+                `).join('')}
+              </div>
+            </nav>
+            
+            <!-- User Info -->
+            <div class="p-4 border-t border-white/10">
+              <div class="flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'}">
+                <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0">
+                  ${currentUser?.name?.charAt(0) || 'U'}
+                </div>
+                ${!sidebarCollapsed ? `
+                  <div class="flex-1 min-w-0">
+                    <p class="text-white font-medium text-sm truncate">${currentUser?.name || 'User'}</p>
+                    <p class="text-white/60 text-xs capitalize">${currentUser?.role || 'user'}</p>
+                  </div>
+                ` : ''}
+              </div>
+              <button 
+                id="logoutBtn"
+                class="w-full mt-3 flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-2'} px-3 py-2 rounded-xl text-red-300 hover:bg-red-500/20 transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                ${!sidebarCollapsed ? '<span class="text-sm">Keluar</span>' : ''}
+              </button>
+            </div>
+            
+            <!-- Collapse Button -->
+            <button 
+              id="toggleSidebar"
+              class="absolute top-1/2 -right-3 w-6 h-6 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <svg class="w-4 h-4 ${sidebarCollapsed ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+          </aside>
+          
+          <!-- Main Content -->
+          <main class="flex-1 h-full overflow-auto p-6">
+            ${renderMainContent()}
+          </main>
+        </div>
+        ${renderModal()}
+        ${renderToast()}
+      `;
+    }
+    
+    function getMenuItems() {
+      const isAdmin = currentUser?.role === 'admin';
+      
+      const items = [
+        { view: 'dashboard', label: 'Dashboard', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>' },
+        { view: 'students', label: 'Data Siswa', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>' },
+        { view: 'grades', label: 'Nilai Siswa', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>' },
+        { view: 'attendance', label: 'Kehadiran QR Code', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' },
+        { view: 'attendance-list', label: 'Laporan Kehadiran', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>' },
+        { view: 'qrcode-generator', label: 'Generate QR Code', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>' },
+      ];
+      
+      if (isAdmin) {
+        items.push(
+          { view: 'teachers', label: 'Data Guru', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>' },
+          { view: 'users', label: 'Kelola Users', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>' }
+        );
+      }
+      
+      items.push(
+        { view: 'settings', label: 'Pengaturan', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>' }
+      );
+      
+      return items;
+    }
+    
+    function renderMainContent() {
+      switch (currentView) {
+        case 'dashboard':
+          return renderDashboardContent();
+        case 'students':
+          return renderStudentsContent();
+        case 'grades':
+          return renderGradesContent();
+        case 'attendance':
+          return renderAttendanceContent();
+        case 'attendance-list':
+          return renderAttendanceListContent();
+        case 'qrcode-generator':
+          return renderQRCodeGeneratorContent();
+        case 'teachers':
+          return renderTeachersContent();
+        case 'users':
+          return renderUsersContent();
+        case 'settings':
+          return renderSettingsContent();
+        default:
+          return renderDashboardContent();
+      }
+    }
+    
+    function renderDashboardContent() {
+      const students = getDataByType('student');
+      const teachers = getDataByType('teacher');
+      const attendances = getTodayAttendance();
+      const presentCount = attendances.filter(a => a.attendanceStatus === 'hadir').length;
+      
+      const stats = [
+        { label: 'Total Siswa', value: students.length, icon: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>', color: 'from-blue-500 to-blue-600' },
+        { label: 'Hadir Hari Ini', value: presentCount, icon: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', color: 'from-green-500 to-green-600' },
+        { label: 'Total Guru', value: teachers.length, icon: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>', color: 'from-purple-500 to-purple-600' },
+        { label: 'Total Kehadiran', value: attendances.length, icon: '<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>', color: 'from-orange-500 to-orange-600' }
+      ];
+      
+      return `
+        <div class="fade-in">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+            <p class="text-gray-500 mt-1">Selamat datang, ${currentUser?.name || 'User'}!</p>
+          </div>
+          
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            ${stats.map(stat => `
+              <div class="bg-gradient-to-br ${stat.color} rounded-2xl p-6 text-white shadow-lg">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-white/80 text-sm">${stat.label}</p>
+                    <p class="text-3xl font-bold mt-1">${stat.value}</p>
+                  </div>
+                  <div class="opacity-80">
+                    ${stat.icon}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <!-- Quick Actions -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Akses Cepat</h3>
+              <div class="space-y-3">
+                <button 
+                  class="w-full px-4 py-3 bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium rounded-xl transition-colors text-left flex items-center gap-3"
+                  data-view="attendance"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  <span>Scan Kehadiran QR Code</span>
+                </button>
+                <button 
+                  class="w-full px-4 py-3 bg-green-50 hover:bg-green-100 text-green-600 font-medium rounded-xl transition-colors text-left flex items-center gap-3"
+                  data-view="qrcode-generator"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                  </svg>
+                  <span>Generate QR Code</span>
+                </button>
+                <button 
+                  class="w-full px-4 py-3 bg-purple-50 hover:bg-purple-100 text-purple-600 font-medium rounded-xl transition-colors text-left flex items-center gap-3"
+                  data-view="attendance-list"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                  <span>Laporan Kehadiran</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- School Info Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Sekolah</h3>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Nama Sekolah</p>
+                    <p class="font-medium text-gray-800">${config.school_name}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderAttendanceContent() {
+      const students = getDataByType('student');
+      
+      return `
+        <div class="fade-in">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Scan Kehadiran Real-Time</h1>
+            <p class="text-gray-500 mt-1">Scan QR code siswa untuk mencatat kehadiran</p>
+          </div>
+          
+          <!-- Main QR Scanner Area -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Scanner Input -->
+            <div class="lg:col-span-2">
+              <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 attendance-box">
+                <div class="flex items-center justify-center mb-4">
+                  <div class="pulse-dot">
+                    <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                  </div>
+                </div>
+                
+                <h3 class="text-center text-xl font-bold text-gray-800 mb-6">Siap untuk Scan QR Code</h3>
+                
+                <div class="mb-6">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Input QR Code</label>
+                  <input 
+                    type="text" 
+                    id="barcodeInput"
+                    class="w-full px-4 py-4 rounded-xl border-2 border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-center text-lg font-bold barcode-input"
+                    placeholder="Arahkan scanner QR code kemari..."
+                    autocomplete="off"
+                  >
+                </div>
+                
+                <div id="attendanceMessage" class="p-4 rounded-xl text-center hidden"></div>
+              </div>
+              
+              <!-- Recent Scans -->
+              <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Scan Terbaru Hari Ini</h3>
+                <div id="recentScans" class="space-y-2 max-h-64 overflow-y-auto scrollbar-thin">
+                  ${getTodayAttendance().reverse().slice(0, 10).map(att => `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p class="font-medium text-gray-800">${att.studentName || 'Unknown'}</p>
+                        <p class="text-sm text-gray-500">${new Date(att.attendanceTime).toLocaleTimeString('id-ID')}</p>
+                      </div>
+                      <span class="attendance-badge ${att.attendanceStatus || 'hadir'}">${att.attendanceStatus || 'Hadir'}</span>
+                    </div>
+                  `).join('') || '<p class="text-gray-400 text-center py-4">Belum ada scan</p>'}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Statistics Sidebar -->
+            <div class="space-y-4">
+              <!-- Today Stats -->
+              <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Statistik Hari Ini</h3>
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <p class="text-sm text-gray-600">Hadir</p>
+                      <p class="text-2xl font-bold text-green-600">${getTodayAttendance().filter(a => a.attendanceStatus === 'hadir').length}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                    <div>
+                      <p class="text-sm text-gray-600">Sakit</p>
+                      <p class="text-2xl font-bold text-yellow-600">${getTodayAttendance().filter(a => a.attendanceStatus === 'sakit').length}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div>
+                      <p class="text-sm text-gray-600">Izin</p>
+                      <p class="text-2xl font-bold text-blue-600">${getTodayAttendance().filter(a => a.attendanceStatus === 'izin').length}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <div>
+                      <p class="text-sm text-gray-600">Alpha</p>
+                      <p class="text-2xl font-bold text-red-600">${getTodayAttendance().filter(a => a.attendanceStatus === 'alpha').length}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Quick Status Update -->
+              <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Update Status Manual</h3>
+                <div class="space-y-2">
+                  <button 
+                    class="w-full px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 font-medium rounded-lg transition-colors text-sm"
+                    id="statusHadir"
+                  >
+                    ✓ Hadir
+                  </button>
+                  <button 
+                    class="w-full px-3 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 font-medium rounded-lg transition-colors text-sm"
+                    id="statusSakit"
+                  >
+                    = Sakit
+                  </button>
+                  <button 
+                    class="w-full px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium rounded-lg transition-colors text-sm"
+                    id="statusIzin"
+                  >
+                    ↗ Izin
+                  </button>
+                  <button 
+                    class="w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-medium rounded-lg transition-colors text-sm"
+                    id="statusAlpha"
+                  >
+                    ✗ Alpha
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderAttendanceListContent() {
+      const students = getDataByType('student');
+      const attendances = getDataByType('attendance');
+      
+      const attendanceByDate = {};
+      attendances.forEach(att => {
+        if (!attendanceByDate[att.attendanceDate]) {
+          attendanceByDate[att.attendanceDate] = [];
+        }
+        attendanceByDate[att.attendanceDate].push(att);
+      });
+      
+      const dates = Object.keys(attendanceByDate).sort().reverse().slice(0, 7);
+      
+      return `
+        <div class="fade-in">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Laporan Kehadiran</h1>
+            <p class="text-gray-500 mt-1">Lihat riwayat kehadiran siswa</p>
+          </div>
+          
+          <!-- Filter Date -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-6">
+            <input 
+              type="date" 
+              id="filterAttendanceDate"
+              class="px-4 py-2 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+              value="${selectedDate}"
+            >
+          </div>
+          
+          <!-- Attendance Table -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Tanggal</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">NIS</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Nama Siswa</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Waktu</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                ${attendances
+                  .filter(a => a.attendanceDate === selectedDate)
+                  .sort((a, b) => new Date(b.attendanceTime) - new Date(a.attendanceTime))
+                  .map(att => `
+                    <tr class="table-row">
+                      <td class="px-6 py-4 text-sm text-gray-800">
+                        ${new Date(att.attendanceDate).toLocaleDateString('id-ID')}
+                      </td>
+                      <td class="px-6 py-4 text-sm text-gray-600">${att.studentNIS || '-'}</td>
+                      <td class="px-6 py-4 text-sm font-medium text-gray-800">${att.studentName || '-'}</td>
+                      <td class="px-6 py-4 text-center text-sm text-gray-600">
+                        ${new Date(att.attendanceTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td class="px-6 py-4 text-center">
+                        <span class="attendance-badge ${att.attendanceStatus || 'hadir'}">${att.attendanceStatus || 'Hadir'}</span>
+                      </td>
+                      <td class="px-6 py-4 text-center">
+                        <button 
+                          class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          data-action="deleteAttendance"
+                          data-id="${att.__backendId}"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  `).join('')}
+              </tbody>
+            </table>
+            
+            ${attendances.filter(a => a.attendanceDate === selectedDate).length === 0 ? `
+              <div class="px-6 py-12 text-center text-gray-500">
+                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p>Belum ada data kehadiran untuk tanggal ini</p>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderQRCodeGeneratorContent() {
+      const students = getDataByType('student');
+      
+      return `
+        <div class="fade-in">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Generate QR Code Siswa</h1>
+            <p class="text-gray-500 mt-1">Buat dan cetak QR code untuk siswa</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Filter -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Pilih Siswa</h3>
+              <div class="space-y-4">
+                <select 
+                  id="studentSelect"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                >
+                  <option value="">Pilih Siswa...</option>
+                  ${students.map(s => `
+                    <option value="${s.__backendId}">${s.nama} (${s.nis})</option>
+                  `).join('')}
+                </select>
+                
+                <button 
+                  class="w-full btn-primary px-4 py-3 rounded-xl text-white font-semibold"
+                  id="generateQRCodeBtn"
+                >
+                  Generate QR Code
+                </button>
+              </div>
+            </div>
+            
+            <!-- Preview -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-800 mb-4">Preview QR Code</h3>
+              <div id="qrcodePreviewContainer" class="flex items-center justify-center p-8 bg-gray-50 rounded-xl min-h-64">
+                <p class="text-gray-400 text-center">Pilih siswa dan klik Generate untuk menampilkan QR code</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Batch Generate -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mt-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Generate QR Code untuk Semua Siswa</h3>
+            <button 
+              class="btn-success px-6 py-3 rounded-xl text-white font-semibold"
+              id="generateAllQRCodesBtn"
+            >
+              Generate Semua QR Code
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderStudentsContent() {
+      const students = getDataByType('student');
+      const filteredStudents = students.filter(s => {
+        const matchSearch = s.nama?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                           s.nis?.includes(searchQuery);
+        const matchClass = selectedClass === 'all' || s.kelas === selectedClass;
+        return matchSearch && matchClass;
+      });
+      
+      return `
+        <div class="fade-in">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800">Data Siswa</h1>
+              <p class="text-gray-500 mt-1">Kelola data siswa sekolah</p>
+            </div>
+            <button 
+              class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2"
+              data-action="addStudent"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Tambah Siswa
+            </button>
+          </div>
+          
+          <!-- Filters -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-6">
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex-1">
+                <div class="relative">
+                  <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                  <input 
+                    type="text" 
+                    id="searchStudent"
+                    class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                    placeholder="Cari nama atau NIS..."
+                    value="${searchQuery}"
+                  >
+                </div>
+              </div>
+              <select 
+                id="filterClass"
+                class="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+              >
+                <option value="all">Semua Kelas</option>
+                ${['1', '2', '3', '4', '5', '6'].map(k => `
+                  <option value="${k}" ${selectedClass === k ? 'selected' : ''}>Kelas ${k}</option>
+                `).join('')}
+              </select>
+            </div>
+          </div>
+          
+          <!-- Table -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">NIS</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Nama</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Kelas</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Jenis Kelamin</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Wali</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                ${filteredStudents.length > 0 ? filteredStudents.map(student => `
+                  <tr class="table-row">
+                    <td class="px-6 py-4 text-sm text-gray-800 font-medium">${student.nis || '-'}</td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                          ${student.nama?.charAt(0) || '?'}
+                        </div>
+                        <span class="text-sm font-medium text-gray-800">${student.nama || '-'}</span>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4">
+                      <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                        Kelas ${student.kelas || '-'}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${student.jenisKelamin === 'L' ? 'Laki-laki' : student.jenisKelamin === 'P' ? 'Perempuan' : '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${student.wali || '-'}</td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center justify-center gap-2">
+                        <button 
+                          class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          data-action="editStudent"
+                          data-id="${student.__backendId}"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                        </button>
+                        <button 
+                          class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          data-action="deleteStudent"
+                          data-id="${student.__backendId}"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('') : `
+                  <tr>
+                    <td colspan="6" class="px-6 py-12 text-center">
+                      <p class="text-gray-500 mb-4">Belum ada data siswa</p>
+                      <button 
+                        class="text-blue-600 hover:text-blue-700 font-medium"
+                        data-action="addStudent"
+                      >
+                        + Tambah siswa pertama
+                      </button>
+                    </td>
+                  </tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderGradesContent() {
+      const grades = getDataByType('grade');
+      
+      const filteredGrades = grades.filter(g => {
+        const matchSearch = g.studentName?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchClass = selectedClass === 'all' || g.kelas === selectedClass;
+        const matchSemester = g.semester === selectedSemester;
+        return matchSearch && matchClass && matchSemester;
+      });
+      
+      return `
+        <div class="fade-in">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800">Nilai Siswa</h1>
+              <p class="text-gray-500 mt-1">Kelola nilai dan rapor siswa</p>
+            </div>
+            <button 
+              class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2"
+              data-action="addGrade"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Input Nilai
+            </button>
+          </div>
+          
+          <!-- Filters -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-6">
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex-1">
+                <input 
+                  type="text" 
+                  id="searchGrade"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  placeholder="Cari nama siswa..."
+                  value="${searchQuery}"
+                >
+              </div>
+              <select 
+                id="filterGradeClass"
+                class="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+              >
+                <option value="all">Semua Kelas</option>
+                ${['1', '2', '3', '4', '5', '6'].map(k => `
+                  <option value="${k}" ${selectedClass === k ? 'selected' : ''}>Kelas ${k}</option>
+                `).join('')}
+              </select>
+              <select 
+                id="filterSemester"
+                class="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+              >
+                <option value="1" ${selectedSemester === '1' ? 'selected' : ''}>Semester 1</option>
+                <option value="2" ${selectedSemester === '2' ? 'selected' : ''}>Semester 2</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Grades Table -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Nama Siswa</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Mapel</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Formatif</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">PTS</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">PAS</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Nilai Akhir</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Predikat</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                ${filteredGrades.length > 0 ? filteredGrades.map(grade => `
+                  <tr class="table-row">
+                    <td class="px-6 py-4 text-sm font-medium text-gray-800">${grade.studentName || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${grade.mapel || '-'}</td>
+                    <td class="px-6 py-4 text-center text-sm text-gray-800">${grade.nilaiFormatif || 0}</td>
+                    <td class="px-6 py-4 text-center text-sm text-gray-800">${grade.nilaiPts || 0}</td>
+                    <td class="px-6 py-4 text-center text-sm text-gray-800">${grade.nilaiPas || 0}</td>
+                    <td class="px-6 py-4 text-center">
+                      <span class="font-bold text-blue-600">${grade.nilaiAkhir || 0}</span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <span class="px-3 py-1 rounded-full text-xs font-bold ${
+                        grade.predikat === 'A' ? 'bg-green-100 text-green-700' :
+                        grade.predikat === 'B' ? 'bg-blue-100 text-blue-700' :
+                        grade.predikat === 'C' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }">${grade.predikat || '-'}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center justify-center gap-2">
+                        <button 
+                          class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          data-action="editGrade"
+                          data-id="${grade.__backendId}"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                        </button>
+                        <button 
+                          class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          data-action="deleteGrade"
+                          data-id="${grade.__backendId}"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('') : `
+                  <tr>
+                    <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                      Belum ada data nilai
+                    </td>
+                  </tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderTeachersContent() {
+      const teachers = getDataByType('teacher');
+      
+      return `
+        <div class="fade-in">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800">Data Guru</h1>
+              <p class="text-gray-500 mt-1">Kelola data tenaga pendidik</p>
+            </div>
+            <button 
+              class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2"
+              data-action="addTeacher"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Tambah Guru
+            </button>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            ${teachers.length > 0 ? teachers.map(teacher => `
+              <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div class="flex items-start gap-4">
+                  <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+                    ${teacher.name?.charAt(0) || '?'}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-gray-800 truncate">${teacher.name || '-'}</h4>
+                    <p class="text-sm text-gray-500">${teacher.nip || '-'}</p>
+                    <p class="text-sm text-blue-600 mt-1">${teacher.subject || '-'}</p>
+                  </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end gap-2">
+                  <button 
+                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                    data-action="editTeacher"
+                    data-id="${teacher.__backendId}"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                  <button 
+                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    data-action="deleteTeacher"
+                    data-id="${teacher.__backendId}"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            `).join('') : `
+              <div class="col-span-full bg-white rounded-2xl p-12 shadow-sm border border-gray-100 text-center">
+                <p class="text-gray-500 mb-4">Belum ada data guru</p>
+                <button 
+                  class="text-blue-600 hover:text-blue-700 font-medium"
+                  data-action="addTeacher"
+                >
+                  + Tambah guru pertama
+                </button>
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderUsersContent() {
+      const users = getDataByType('user');
+      
+      return `
+        <div class="fade-in">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 class="text-2xl font-bold text-gray-800">Kelola Users</h1>
+              <p class="text-gray-500 mt-1">Manajemen akun pengguna sistem</p>
+            </div>
+            <button 
+              class="btn-primary px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2"
+              data-action="addUser"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Tambah User
+            </button>
+          </div>
+          
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Username</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Nama</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Role</th>
+                  <th class="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Aksi</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                ${users.length > 0 ? users.map(user => `
+                  <tr class="table-row">
+                    <td class="px-6 py-4 text-sm font-medium text-gray-800">${user.username || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${user.name || '-'}</td>
+                    <td class="px-6 py-4">
+                      <span class="px-3 py-1 rounded-full text-xs font-medium ${
+                        user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                      }">${user.role || '-'}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex items-center justify-center gap-2">
+                        <button 
+                          class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          data-action="editUser"
+                          data-id="${user.__backendId}"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                        </button>
+                        <button 
+                          class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          data-action="deleteUser"
+                          data-id="${user.__backendId}"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('') : `
+                  <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                      Belum ada data user
+                    </td>
+                  </tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderSettingsContent() {
+      return `
+        <div class="fade-in">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Pengaturan</h1>
+            <p class="text-gray-500 mt-1">Konfigurasi sistem dan sekolah</p>
+          </div>
+          
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">Informasi Sekolah</h3>
+            
+            <form id="settingsForm" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Nama Sekolah</label>
+                  <input 
+                    type="text" 
+                    name="school_name"
+                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                    value="${config.school_name}"
+                  >
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Tahun Ajaran</label>
+                  <input 
+                    type="text" 
+                    name="academic_year"
+                    class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                    value="${config.academic_year}"
+                  >
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Alamat Sekolah</label>
+                <input 
+                  type="text" 
+                  name="school_address"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  value="${config.school_address}"
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kepala Sekolah</label>
+                <input 
+                  type="text" 
+                  name="principal_name"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  value="${config.principal_name}"
+                >
+              </div>
+              
+              <div class="pt-4">
+                <button 
+                  type="submit"
+                  class="btn-primary px-6 py-3 rounded-xl text-white font-semibold"
+                >
+                  Simpan Pengaturan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderModal() {
+      if (!modalState.isOpen) return '';
+      
+      let content = '';
+      
+      switch (modalState.type) {
+        case 'addStudent':
+        case 'editStudent':
+          content = renderStudentModal();
+          break;
+        case 'addTeacher':
+        case 'editTeacher':
+          content = renderTeacherModal();
+          break;
+        case 'addUser':
+        case 'editUser':
+          content = renderUserModal();
+          break;
+        case 'addGrade':
+        case 'editGrade':
+          content = renderGradeModal();
+          break;
+        case 'confirmDelete':
+          content = renderDeleteConfirmModal();
+          break;
+        default:
+          return '';
+      }
+      
+      return `
+        <div class="fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+          <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90%] overflow-y-auto slide-in">
+            ${content}
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderStudentModal() {
+      const isEdit = modalState.type === 'editStudent';
+      const data = modalState.data || {};
+      
+      return `
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-800">${isEdit ? 'Edit Siswa' : 'Tambah Siswa'}</h3>
+            <button class="p-2 hover:bg-gray-100 rounded-lg" data-action="closeModal">
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <form id="studentForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">NIS <span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                name="nis"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.nis || ''}"
+                required
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                name="nama"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.nama || ''}"
+                required
+              >
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Kelas <span class="text-red-500">*</span></label>
+                <select 
+                  name="kelas"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  required
+                >
+                  ${['1', '2', '3', '4', '5', '6'].map(k => `
+                    <option value="${k}" ${data.kelas === k ? 'selected' : ''}>Kelas ${k}</option>
+                  `).join('')}
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin <span class="text-red-500">*</span></label>
+                <select 
+                  name="jenisKelamin"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  required
+                >
+                  <option value="L" ${data.jenisKelamin === 'L' ? 'selected' : ''}>Laki-laki</option>
+                  <option value="P" ${data.jenisKelamin === 'P' ? 'selected' : ''}>Perempuan</option>
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nama Wali</label>
+              <input 
+                type="text" 
+                name="wali"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.wali || ''}"
+              >
+            </div>
+            
+            <div class="flex gap-3 pt-4">
+              <button 
+                type="button"
+                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
+                data-action="closeModal"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit"
+                class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium"
+              >
+                Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+    
+    function renderTeacherModal() {
+      const isEdit = modalState.type === 'editTeacher';
+      const data = modalState.data || {};
+      
+      return `
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-800">${isEdit ? 'Edit Guru' : 'Tambah Guru'}</h3>
+            <button class="p-2 hover:bg-gray-100 rounded-lg" data-action="closeModal">
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <form id="teacherForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                name="name"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.name || ''}"
+                required
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">NIP</label>
+              <input 
+                type="text" 
+                name="nip"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.nip || ''}"
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Mata Pelajaran</label>
+              <input 
+                type="text" 
+                name="subject"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.subject || ''}"
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <input 
+                type="email" 
+                name="email"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.email || ''}"
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">No. Telepon</label>
+              <input 
+                type="tel" 
+                name="phone"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.phone || ''}"
+              >
+            </div>
+            
+            <div class="flex gap-3 pt-4">
+              <button 
+                type="button"
+                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
+                data-action="closeModal"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit"
+                class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium"
+              >
+                Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+    
+    function renderUserModal() {
+      const isEdit = modalState.type === 'editUser';
+      const data = modalState.data || {};
+      
+      return `
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-800">${isEdit ? 'Edit User' : 'Tambah User'}</h3>
+            <button class="p-2 hover:bg-gray-100 rounded-lg" data-action="closeModal">
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <form id="userForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Username <span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                name="username"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.username || ''}"
+                required
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Password ${isEdit ? '' : '<span class="text-red-500">*</span>'}</label>
+              <input 
+                type="password" 
+                name="password"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                placeholder="${isEdit ? 'Kosongkan jika tidak diubah' : ''}"
+                ${isEdit ? '' : 'required'}
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                name="name"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                value="${data.name || ''}"
+                required
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Role <span class="text-red-500">*</span></label>
+              <select 
+                name="role"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                required
+              >
+                <option value="guru" ${data.role === 'guru' ? 'selected' : ''}>Guru</option>
+                <option value="admin" ${data.role === 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+            </div>
+            
+            <div class="flex gap-3 pt-4">
+              <button 
+                type="button"
+                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
+                data-action="closeModal"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit"
+                class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium"
+              >
+                Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+    
+    function renderGradeModal() {
+      const isEdit = modalState.type === 'editGrade';
+      const data = modalState.data || {};
+      const students = getDataByType('student');
+      
+      return `
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-800">${isEdit ? 'Edit Nilai' : 'Input Nilai'}</h3>
+            <button class="p-2 hover:bg-gray-100 rounded-lg" data-action="closeModal">
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <form id="gradeForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Siswa <span class="text-red-500">*</span></label>
+              <select 
+                name="studentId"
+                id="gradeStudentSelect"
+                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                required
+                ${isEdit ? 'disabled' : ''}
+              >
+                <option value="">Pilih Siswa</option>
+                ${students.map(s => `
+                  <option value="${s.__backendId}" data-name="${s.nama}" data-kelas="${s.kelas}" data-nis="${s.nis}" ${data.studentId === s.__backendId ? 'selected' : ''}>${s.nama} - Kelas ${s.kelas}</option>
+                `).join('')}
+              </select>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Mata Pelajaran <span class="text-red-500">*</span></label>
+                <input 
+                  type="text" 
+                  name="mapel"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  value="${data.mapel || ''}"
+                  required
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
+                <select 
+                  name="semester"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                >
+                  <option value="1" ${data.semester === '1' ? 'selected' : ''}>Semester 1</option>
+                  <option value="2" ${data.semester === '2' ? 'selected' : ''}>Semester 2</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Formatif</label>
+                <input 
+                  type="number" 
+                  name="nilaiFormatif"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  value="${data.nilaiFormatif || 0}"
+                  min="0"
+                  max="100"
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">PTS</label>
+                <input 
+                  type="number" 
+                  name="nilaiPts"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  value="${data.nilaiPts || 0}"
+                  min="0"
+                  max="100"
+                >
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">PAS</label>
+                <input 
+                  type="number" 
+                  name="nilaiPas"
+                  class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-blue-500 outline-none"
+                  value="${data.nilaiPas || 0}"
+                  min="0"
+                  max="100"
+                >
+              </div>
+            </div>
+            
+            <div class="flex gap-3 pt-4">
+              <button 
+                type="button"
+                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
+                data-action="closeModal"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit"
+                class="flex-1 btn-primary px-4 py-2.5 rounded-xl text-white font-medium"
+              >
+                Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+    
+    function renderDeleteConfirmModal() {
+      return `
+        <div class="p-6">
+          <div class="text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Konfirmasi Hapus</h3>
+            <p class="text-gray-500 mb-6">Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.</p>
+            
+            <div class="flex gap-3">
+              <button 
+                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50"
+                data-action="closeModal"
+              >
+                Batal
+              </button>
+              <button 
+                class="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700"
+                data-action="confirmDelete"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function renderToast() {
+      if (!toastMessage) return '';
+      
+      const bgColor = toastMessage.type === 'success' ? 'bg-green-500' : 
+                      toastMessage.type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+      
+      return `
+        <div class="fixed top-4 right-4 z-50 toast">
+          <div class="${bgColor} text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3">
+            ${toastMessage.type === 'success' ? `
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            ` : `
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            `}
+            <span>${toastMessage.message}</span>
+          </div>
+        </div>
+      `;
+    }
+    
+    function attachEventListeners() {
+      const loginForm = document.getElementById('loginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+      }
+      
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+      }
+      
+      const toggleSidebar = document.getElementById('toggleSidebar');
+      if (toggleSidebar) {
+        toggleSidebar.addEventListener('click', () => {
+          sidebarCollapsed = !sidebarCollapsed;
+          render();
+        });
+      }
+      
+      document.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          currentView = e.currentTarget.dataset.view;
+          render();
+        });
+      });
+      
+      document.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', handleAction);
+      });
+      
+      const searchStudent = document.getElementById('searchStudent');
+      if (searchStudent) {
+        searchStudent.addEventListener('input', (e) => {
+          searchQuery = e.target.value;
+          render();
+        });
+      }
+      
+      const searchGrade = document.getElementById('searchGrade');
+      if (searchGrade) {
+        searchGrade.addEventListener('input', (e) => {
+          searchQuery = e.target.value;
+          render();
+        });
+      }
+      
+      const filterClass = document.getElementById('filterClass');
+      if (filterClass) {
+        filterClass.addEventListener('change', (e) => {
+          selectedClass = e.target.value;
+          render();
+        });
+      }
+      
+      const filterGradeClass = document.getElementById('filterGradeClass');
+      if (filterGradeClass) {
+        filterGradeClass.addEventListener('change', (e) => {
+          selectedClass = e.target.value;
+          render();
+        });
+      }
+      
+      const filterSemester = document.getElementById('filterSemester');
+      if (filterSemester) {
+        filterSemester.addEventListener('change', (e) => {
+          selectedSemester = e.target.value;
+          render();
+        });
+      }
+      
+      const filterAttendanceDate = document.getElementById('filterAttendanceDate');
+      if (filterAttendanceDate) {
+        filterAttendanceDate.addEventListener('change', (e) => {
+          selectedDate = e.target.value;
+          render();
+        });
+      }
+      
+      const studentForm = document.getElementById('studentForm');
+      if (studentForm) {
+        studentForm.addEventListener('submit', handleStudentSubmit);
+      }
+      
+      const teacherForm = document.getElementById('teacherForm');
+      if (teacherForm) {
+        teacherForm.addEventListener('submit', handleTeacherSubmit);
+      }
+      
+      const userForm = document.getElementById('userForm');
+      if (userForm) {
+        userForm.addEventListener('submit', handleUserSubmit);
+      }
+      
+      const gradeForm = document.getElementById('gradeForm');
+      if (gradeForm) {
+        gradeForm.addEventListener('submit', handleGradeSubmit);
+      }
+      
+      const settingsForm = document.getElementById('settingsForm');
+      if (settingsForm) {
+        settingsForm.addEventListener('submit', handleSettingsSubmit);
+      }
+      
+      // QR code input
+      const barcodeInput = document.getElementById('barcodeInput');
+      if (barcodeInput) {
+        barcodeInput.addEventListener('keypress', handleQRCodeInput);
+        barcodeInput.focus();
+      }
+      
+      // Status buttons
+      const statusHadir = document.getElementById('statusHadir');
+      const statusSakit = document.getElementById('statusSakit');
+      const statusIzin = document.getElementById('statusIzin');
+      const statusAlpha = document.getElementById('statusAlpha');
+      
+      if (statusHadir) statusHadir.addEventListener('click', () => updateQuickStatus('hadir'));
+      if (statusSakit) statusSakit.addEventListener('click', () => updateQuickStatus('sakit'));
+      if (statusIzin) statusIzin.addEventListener('click', () => updateQuickStatus('izin'));
+      if (statusAlpha) statusAlpha.addEventListener('click', () => updateQuickStatus('alpha'));
+      
+      // QR code generator
+      const generateQRCodeBtn = document.getElementById('generateQRCodeBtn');
+      if (generateQRCodeBtn) {
+        generateQRCodeBtn.addEventListener('click', handleGenerateQRCode);
+      }
+      
+      const generateAllQRCodesBtn = document.getElementById('generateAllQRCodesBtn');
+      if (generateAllQRCodesBtn) {
+        generateAllQRCodesBtn.addEventListener('click', handleGenerateAllQRCodes);
+      }
+      
+      const studentSelect = document.getElementById('studentSelect');
+      if (studentSelect) {
+        studentSelect.addEventListener('change', handleStudentSelectChange);
+      }
+    }
+    
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      isLoading = true;
+      render();
+      
+      if ((username === 'admin' && password === 'admin123') || 
+          (username === 'guru' && password === 'guru123')) {
+        currentUser = {
+          username: username,
+          name: username === 'admin' ? 'Administrator' : 'Guru Demo',
+          role: username === 'admin' ? 'admin' : 'guru'
+        };
+        currentView = 'dashboard';
+        isLoading = false;
+        showToast('Login berhasil!', 'success');
+        render();
+        return;
+      }
+      
+      const user = getUserByCredentials(username, password);
+      if (user) {
+        currentUser = user;
+        currentView = 'dashboard';
+        showToast('Login berhasil!', 'success');
+      } else {
+        showToast('Username atau password salah', 'error');
+      }
+      
+      isLoading = false;
+      render();
+    }
+    
+    function handleLogout() {
+      currentUser = null;
+      currentView = 'login';
+      showToast('Berhasil logout', 'success');
+      render();
+    }
+    
+    function handleAction(e) {
+      const action = e.currentTarget.dataset.action;
+      const id = e.currentTarget.dataset.id;
+      
+      switch (action) {
+        case 'addStudent':
+          modalState = { isOpen: true, type: 'addStudent', data: null };
+          break;
+        case 'editStudent':
+          const student = allData.find(d => d.__backendId === id);
+          modalState = { isOpen: true, type: 'editStudent', data: student };
+          break;
+        case 'deleteStudent':
+          modalState = { isOpen: true, type: 'confirmDelete', data: { id, dataType: 'student' } };
+          break;
+        case 'addTeacher':
+          modalState = { isOpen: true, type: 'addTeacher', data: null };
+          break;
+        case 'editTeacher':
+          const teacher = allData.find(d => d.__backendId === id);
+          modalState = { isOpen: true, type: 'editTeacher', data: teacher };
+          break;
+        case 'deleteTeacher':
+          modalState = { isOpen: true, type: 'confirmDelete', data: { id, dataType: 'teacher' } };
+          break;
+        case 'addUser':
+          modalState = { isOpen: true, type: 'addUser', data: null };
+          break;
+        case 'editUser':
+          const user = allData.find(d => d.__backendId === id);
+          modalState = { isOpen: true, type: 'editUser', data: user };
+          break;
+        case 'deleteUser':
+          modalState = { isOpen: true, type: 'confirmDelete', data: { id, dataType: 'user' } };
+          break;
+        case 'addGrade':
+          modalState = { isOpen: true, type: 'addGrade', data: null };
+          break;
+        case 'editGrade':
+          const grade = allData.find(d => d.__backendId === id);
+          modalState = { isOpen: true, type: 'editGrade', data: grade };
+          break;
+        case 'deleteGrade':
+          modalState = { isOpen: true, type: 'confirmDelete', data: { id, dataType: 'grade' } };
+          break;
+        case 'deleteAttendance':
+          modalState = { isOpen: true, type: 'confirmDelete', data: { id, dataType: 'attendance' } };
+          break;
+        case 'closeModal':
+          modalState = { isOpen: false, type: null, data: null };
+          break;
+        case 'confirmDelete':
+          handleDelete();
+          break;
+      }
+      
+      render();
+    }
+    
+    async function handleQRCodeInput(e) {
+      if (e.key !== 'Enter') return;
+      
+      e.preventDefault();
+      const qrValue = barcodeInput.trim();
+      
+      if (!qrValue) return;
+      
+      // Parse QR code value (format: STD{nis}|{nama})
+      const parts = qrValue.split('|');
+      const nisCode = parts[0].replace('STD', '');
+      
+      const students = getDataByType('student');
+      const student = students.find(s => s.nis === nisCode);
+      
+      if (!student) {
+        showToast('QR Code tidak valid atau siswa tidak ditemukan', 'error');
+        displayAttendanceMessage('error', 'Siswa tidak ditemukan!');
+        barcodeInput = '';
+        render();
+        return;
+      }
+      
+      const existing = getStudentAttendanceToday(student.__backendId);
+      if (existing) {
+        showToast('Siswa sudah tercatat hari ini', 'error');
+        displayAttendanceMessage('error', `${student.nama} sudah tercatat!`);
+        barcodeInput = '';
+        render();
+        return;
+      }
+      
+      isLoading = true;
+      render();
+      
+      try {
+        const attendanceData = {
+          type: 'attendance',
+          studentId: student.__backendId,
+          studentName: student.nama,
+          studentNIS: student.nis,
+          kelas: student.kelas,
+          attendanceDate: selectedDate,
+          attendanceTime: new Date().toISOString(),
+          attendanceStatus: 'hadir',
+          createdAt: new Date().toISOString()
+        };
+        
+        const result = await window.dataSdk.create(attendanceData);
+        if (result.isOk) {
+          showToast(`${student.nama} berhasil tercatat`, 'success');
+          displayAttendanceMessage('success', `✓ ${student.nama} Hadir`);
+        } else {
+          showToast('Gagal mencatat kehadiran', 'error');
+          displayAttendanceMessage('error', 'Gagal mencatat!');
+        }
+      } catch (error) {
+        showToast('Terjadi kesalahan', 'error');
+        displayAttendanceMessage('error', 'Terjadi kesalahan!');
+      }
+      
+      barcodeInput = '';
+      isLoading = false;
+      render();
+      
+      setTimeout(() => {
+        const input = document.getElementById('barcodeInput');
+        if (input) input.focus();
+      }, 100);
+    }
+    
+    function displayAttendanceMessage(type, message) {
+      setTimeout(() => {
+        const msgEl = document.getElementById('attendanceMessage');
+        if (msgEl) {
+          msgEl.className = `p-4 rounded-xl text-center ${
+            type === 'success' ? 'attendance-success text-green-700' :
+            type === 'error' ? 'attendance-error text-red-700' :
+            'attendance-box text-blue-700'
+          }`;
+          msgEl.textContent = message;
+          msgEl.classList.remove('hidden');
+          
+          setTimeout(() => {
+            msgEl.classList.add('hidden');
+          }, 2000);
+        }
+      }, 100);
+    }
+    
+    async function updateQuickStatus(status) {
+      const students = getDataByType('student');
+      if (students.length === 0) {
+        showToast('Tidak ada siswa untuk dicatat', 'error');
+        return;
+      }
+      
+      const unrecordedStudents = students.filter(s => !getStudentAttendanceToday(s.__backendId));
+      
+      if (unrecordedStudents.length === 0) {
+        showToast('Semua siswa sudah tercatat', 'error');
+        return;
+      }
+      
+      const student = unrecordedStudents[0];
+      
+      try {
+        const attendanceData = {
+          type: 'attendance',
+          studentId: student.__backendId,
+          studentName: student.nama,
+          studentNIS: student.nis,
+          kelas: student.kelas,
+          attendanceDate: selectedDate,
+          attendanceTime: new Date().toISOString(),
+          attendanceStatus: status,
+          createdAt: new Date().toISOString()
+        };
+        
+        const result = await window.dataSdk.create(attendanceData);
+        if (result.isOk) {
+          showToast(`${student.nama} dicatat ${status}`, 'success');
+        } else {
+          showToast('Gagal mencatat', 'error');
+        }
+      } catch (error) {
+        showToast('Terjadi kesalahan', 'error');
+      }
+      
+      render();
+    }
+    
+    function handleGenerateQRCode() {
+      const select = document.getElementById('studentSelect');
+      const studentId = select.value;
+      
+      if (!studentId) {
+        showToast('Pilih siswa terlebih dahulu', 'error');
+        return;
+      }
+      
+      const student = allData.find(d => d.__backendId === studentId && d.type === 'student');
+      if (!student) return;
+      
+      const qrValue = generateQRCode(student.nis, student.nama);
+      const preview = document.getElementById('qrcodePreviewContainer');
+      
+      preview.innerHTML = `
+        <div class="flex flex-col items-center gap-4 w-full">
+          <div id="qrcode" style="background: white; padding: 20px; border-radius: 8px; display: flex; justify-content: center; align-items: center;"></div>
+          <div class="text-center">
+            <p class="font-semibold text-gray-800">${student.nama}</p>
+            <p class="text-sm text-gray-600">NIS: ${student.nis}</p>
+            <p class="text-xs text-gray-500">Kelas: ${student.kelas}</p>
+          </div>
+          <button 
+            onclick="window.print()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Cetak QR Code
+          </button>
+        </div>
+      `;
+      
+      setTimeout(() => {
+        new QRCode(document.getElementById("qrcode"), {
+          text: qrValue,
+          width: 256,
+          height: 256,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }, 100);
+    }
+    
+    function handleGenerateAllQRCodes() {
+      const students = getDataByType('student');
+      
+      if (students.length === 0) {
+        showToast('Tidak ada siswa untuk di-generate', 'error');
+        return;
+      }
+      
+      let printContent = '<html><head><title>QR Code Siswa</title><style>';
+      printContent += 'body { font-family: Arial, sans-serif; margin: 10px; }';
+      printContent += '.qrcode-item { page-break-inside: avoid; margin-bottom: 30px; text-align: center; border: 1px solid #ccc; padding: 15px; }';
+      printContent += '.qrcode-item h4 { margin: 5px 0; font-size: 14px; }';
+      printContent += '.qrcode-item p { margin: 2px 0; font-size: 12px; color: #666; }';
+      printContent += '#qrcode-container { display: flex; justify-content: center; margin: 15px 0; }';
+      printContent += '</style></head><body>';
+      
+      students.forEach((student, index) => {
+        const qrValue = generateQRCode(student.nis, student.nama);
+        printContent += `
+          <div class="qrcode-item">
+            <h4>${student.nama}</h4>
+            <p>NIS: ${student.nis}</p>
+            <p>Kelas: ${student.kelas}</p>
+            <div id="qrcode_${index}"></div>
+          </div>
+        `;
+      });
+      
+      printContent += '</body></html>';
+      
+      const printWindow = window.open('', '', 'width=800,height=600');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      
+      setTimeout(() => {
+        students.forEach((student, index) => {
+          const qrValue = generateQRCode(student.nis, student.nama);
+          new QRCode(printWindow.document.getElementById(`qrcode_${index}`), {
+            text: qrValue,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        });
+        
+        printWindow.print();
+      }, 1000);
+      
+      showToast('Siap untuk mencetak semua QR Code', 'success');
+    }
+    
+    function handleStudentSelectChange() {
+      const select = document.getElementById('studentSelect');
+      const preview = document.getElementById('qrcodePreviewContainer');
+      
+      if (!select.value) {
+        preview.innerHTML = '<p class="text-gray-400 text-center">Pilih siswa dan klik Generate untuk menampilkan QR code</p>';
+        return;
+      }
+    }
+    
+    async function handleStudentSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = {
+        type: 'student',
+        nis: formData.get('nis'),
+        nama: formData.get('nama'),
+        kelas: formData.get('kelas'),
+        jenisKelamin: formData.get('jenisKelamin'),
+        wali: formData.get('wali'),
+        createdAt: new Date().toISOString()
+      };
+      
+      if (allData.length >= 999) {
+        showToast('Batas maksimum 999 data tercapai', 'error');
+        return;
+      }
+      
+      isLoading = true;
+      render();
+      
+      try {
+        if (modalState.type === 'editStudent' && modalState.data) {
+          const result = await window.dataSdk.update({ ...modalState.data, ...data });
+          if (result.isOk) {
+            showToast('Data siswa berhasil diperbarui', 'success');
+          } else {
+            showToast('Gagal memperbarui data', 'error');
+          }
+        } else {
+          const result = await window.dataSdk.create(data);
+          if (result.isOk) {
+            showToast('Siswa berhasil ditambahkan', 'success');
+          } else {
+            showToast('Gagal menambahkan siswa', 'error');
+          }
+        }
+      } catch (error) {
+        showToast('Terjadi kesalahan', 'error');
+      }
+      
+      modalState = { isOpen: false, type: null, data: null };
+      isLoading = false;
+      render();
+    }
+    
+    async function handleTeacherSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = {
+        type: 'teacher',
+        name: formData.get('name'),
+        nip: formData.get('nip'),
+        subject: formData.get('subject'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        createdAt: new Date().toISOString()
+      };
+      
+      if (allData.length >= 999) {
+        showToast('Batas maksimum 999 data tercapai', 'error');
+        return;
+      }
+      
+      isLoading = true;
+      render();
+      
+      try {
+        if (modalState.type === 'editTeacher' && modalState.data) {
+          const result = await window.dataSdk.update({ ...modalState.data, ...data });
+          if (result.isOk) {
+            showToast('Data guru berhasil diperbarui', 'success');
+          } else {
+            showToast('Gagal memperbarui data', 'error');
+          }
+        } else {
+          const result = await window.dataSdk.create(data);
+          if (result.isOk) {
+            showToast('Guru berhasil ditambahkan', 'success');
+          } else {
+            showToast('Gagal menambahkan guru', 'error');
+          }
+        }
+      } catch (error) {
+        showToast('Terjadi kesalahan', 'error');
+      }
+      
+      modalState = { isOpen: false, type: null, data: null };
+      isLoading = false;
+      render();
+    }
+    
+    async function handleUserSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = {
+        type: 'user',
+        username: formData.get('username'),
+        name: formData.get('name'),
+        role: formData.get('role'),
+        createdAt: new Date().toISOString()
+      };
+      
+      const password = formData.get('password');
+      if (password) {
+        data.password = password;
+      }
+      
+      if (allData.length >= 999) {
+        showToast('Batas maksimum 999 data tercapai', 'error');
+        return;
+      }
+      
+      isLoading = true;
+      render();
+      
+      try {
+        if (modalState.type === 'editUser' && modalState.data) {
+          const updateData = { ...modalState.data, ...data };
+          if (!password) {
+            updateData.password = modalState.data.password;
+          }
+          const result = await window.dataSdk.update(updateData);
+          if (result.isOk) {
+            showToast('Data user berhasil diperbarui', 'success');
+          } else {
+            showToast('Gagal memperbarui data', 'error');
+          }
+        } else {
+          const result = await window.dataSdk.create(data);
+          if (result.isOk) {
+            showToast('User berhasil ditambahkan', 'success');
+          } else {
+            showToast('Gagal menambahkan user', 'error');
+          }
+        }
+      } catch (error) {
+        showToast('Terjadi kesalahan', 'error');
+      }
+      
+      modalState = { isOpen: false, type: null, data: null };
+      isLoading = false;
+      render();
+    }
+    
+    async function handleGradeSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const studentSelect = document.getElementById('gradeStudentSelect');
+      const selectedOption = studentSelect?.options[studentSelect.selectedIndex];
+      
+      const nilaiFormatif = parseFloat(formData.get('nilaiFormatif')) || 0;
+      const nilaiPts = parseFloat(formData.get('nilaiPts')) || 0;
+      const nilaiPas = parseFloat(formData.get('nilaiPas')) || 0;
+      const { nilaiAkhir, predikat } = calculateGrade(nilaiFormatif, nilaiPts, nilaiPas);
+      
+      const data = {
+        type: 'grade',
+        studentId: formData.get('studentId'),
+        studentName: selectedOption?.dataset?.name || modalState.data?.studentName || '',
+        kelas: selectedOption?.dataset?.kelas || modalState.data?.kelas || '',
+        mapel: formData.get('mapel'),
+        semester: formData.get('semester'),
+        nilaiFormatif: nilaiFormatif,
+        nilaiPts: nilaiPts,
+        nilaiPas: nilaiPas,
+        nilaiAkhir: nilaiAkhir,
+        predikat: predikat,
+        createdAt: new Date().toISOString()
+      };
+      
+      if (allData.length >= 999) {
+        showToast('Batas maksimum 999 data tercapai', 'error');
+        return;
+      }
+      
+      isLoading = true;
+      render();
+      
+      try {
+        if (modalState.type === 'editGrade' && modalState.data) {
+          const result = await window.dataSdk.update({ ...modalState.data, ...data });
+          if (result.isOk) {
+            showToast('Nilai berhasil diperbarui', 'success');
+          } else {
+            showToast('Gagal memperbarui nilai', 'error');
+          }
+        } else {
+          const result = await window.dataSdk.create(data);
+          if (result.isOk) {
+            showToast('Nilai berhasil ditambahkan', 'success');
+          } else {
+            showToast('Gagal menambahkan nilai', 'error');
+          }
+        }
+      } catch (error) {
+        showToast('Terjadi kesalahan', 'error');
+      }
+      
+      modalState = { isOpen: false, type: null, data: null };
+      isLoading = false;
+      render();
+    }
+    
+    async function handleSettingsSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      
+      config = {
+        ...config,
+        school_name: formData.get('school_name'),
+        school_address: formData.get('school_address'),
+        principal_name: formData.get('principal_name'),
+        academic_year: formData.get('academic_year')
+      };
+      
+      if (window.elementSdk) {
+        await window.elementSdk.setConfig(config);
+      }
+      
+      showToast('Pengaturan berhasil disimpan', 'success');
+      render();
+    }
+    
+    async function handleDelete() {
+      if (!modalState.data) return;
+      
+      const { id } = modalState.data;
+      const record = allData.find(d => d.__backendId === id);
+      
+      if (!record) {
+        showToast('Data tidak ditemukan', 'error');
+        modalState = { isOpen: false, type: null, data: null };
+        render();
+        return;
+      }
+      
+      isLoading = true;
+      render();
+      
+      try {
+        const result = await window.dataSdk.delete(record);
+        if (result.isOk) {
+          showToast('Data berhasil dihapus', 'success');
+        } else {
+          showToast('Gagal menghapus data', 'error');
+        }
+      } catch (error) {
+        showToast('Terjadi kesalahan', 'error');
+      }
+      
+      modalState = { isOpen: false, type: null, data: null };
+      isLoading = false;
+      render();
+    }
+    
+    async function onConfigChange(newConfig) {
+      config = { ...defaultConfig, ...newConfig };
+      render();
+    }
+    
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [
+          {
+            get: () => cfg.primary_color || defaultConfig.primary_color,
+            set: (value) => {
+              cfg.primary_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ primary_color: value });
+              }
+            }
+          },
+          {
+            get: () => cfg.secondary_color || defaultConfig.secondary_color,
+            set: (value) => {
+              cfg.secondary_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ secondary_color: value });
+              }
+            }
+          },
+          {
+            get: () => cfg.accent_color || defaultConfig.accent_color,
+            set: (value) => {
+              cfg.accent_color = value;
+              if (window.elementSdk) {
+                window.elementSdk.setConfig({ accent_color: value });
+              }
+            }
+          }
+        ],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+    
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['school_name', cfg.school_name || defaultConfig.school_name],
+        ['school_address', cfg.school_address || defaultConfig.school_address],
+        ['principal_name', cfg.principal_name || defaultConfig.principal_name],
+        ['academic_year', cfg.academic_year || defaultConfig.academic_year]
+      ]);
+    }
+    
+    async function init() {
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities,
+          mapToEditPanelValues
+        });
+        config = { ...defaultConfig, ...window.elementSdk.config };
+      }
+      
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (!result.isOk) {
+          console.error('Failed to initialize Data SDK');
+        }
+      }
+      
+      render();
+    }
+    
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d0c67b3c513ea7f',t:'MTc3MTU3Mzc0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
